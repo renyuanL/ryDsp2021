@@ -367,6 +367,27 @@ def genSawtoothSignal(T=1, f= 440, A=1, ϕ=0, sr= 44100):
 
 #%%
 #%%
+def apodizeWav(wav, starting_ratio=1/2, ending_ratio=1/2):
+    
+    assert starting_ratio <= 1/2
+    assert ending_ratio <= 1/2
+    
+    T0= wav.shape[0]
+    T1= int(T0 * starting_ratio)
+    T2= int(T0 * ending_ratio)
+    win0= np.linspace(0,1, T1)
+    win1= np.ones(T0-T1-T2)
+    win2= np.linspace(1,0, T2)
+    win=  np.concatenate((win0, win1, win2)) 
+    win=  win.reshape(-1,1)
+    q= wav*win
+    
+    return q
+
+
+
+#%%
+#%%
 if __name__=='__main__':
     
     sr, wav= getWavFromYoutube()
@@ -402,6 +423,14 @@ if __name__=='__main__':
     plotWav(xx,sr)
     
     #time.sleep(1)
+    
+    x=  wav[sr*100:sr*120, 0]
+    xx= apodizeWav(x)
+    playWav(xx,sr)
+    plotWav(xx,sr)
+    
+    #time.sleep(1)
+    
     input('after playing, press any key to continue..')
     
     
