@@ -438,14 +438,14 @@ if __name__=='__main__':
     
     #time.sleep(1)
     
-    x=  wav[sr*100:sr*120, 0]
-    xx= apodizeWav(x)
-    playWav(xx,sr)
-    plotWav(xx,sr)
+    #x=  wav[sr*100:sr*120, 0]
+    #xx= apodizeWav(x)
+    #playWav(xx,sr)
+    #plotWav(xx,sr)
     
     #time.sleep(1)
     
-    input('after playing, press any key to continue..')
+    #input('after playing, press any key to continue..')
     
     
 #%%
@@ -453,7 +453,9 @@ if __name__=='__main__':
 #%%
 
 #%%
-
+#
+# Trying to Wrap up all the functions into a class
+#
 class ryWav:
     def __init__(self, x= None, sr= None):
                 
