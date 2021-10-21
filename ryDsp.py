@@ -14,6 +14,13 @@ import matplotlib.pyplot as pl
 
 import time
 
+#%matplotlib qt
+
+import seaborn as sb
+sb.set_style('whitegrid')
+
+from IPython.display import display, Audio
+
 
 π= np.pi
 
@@ -111,6 +118,13 @@ def playAudioFile(filename= '_tmp_.mp3'):
     print(f'cmd= {cmd}')
     subprocess.Popen(cmd)
     return filename
+
+
+def playWav_jpt(wav, sr= defaultSampleRate):
+    if wav.shape[0]>2:
+        wav= wav.T
+    display(Audio(wav, rate=sr))
+    
 
 import os.path
 
