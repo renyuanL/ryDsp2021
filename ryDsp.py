@@ -285,24 +285,87 @@ def shortTimeFFT_inv(Z):
     
     return x
     
+def stRFFT(x, nFFT= 1024):
+    
+    assert x.ndim == 1
+    
+    x= zeroPaddingWav(x, nFFT)
+    z= x.reshape(-1, nFFT)
+    Z=  numpy.fft.rfft(z)
+    
+    return Z
+
+def stRFFT_inv(Z):
+    
+    z= numpy.fft.irfft(Z)
+    x= z.flatten()
+    
+    return x
+    
 def specWav(x, nFFT= 1024):
     
     if x.ndim==2:
         x= x.mean(axis=1)
         x= x.flatten()
     
-    X= shortTimeFFT(x, nFFT)
+    X= stRFFT(x, nFFT)
     X= np.abs(X)
-    X= np.log(X)
+    X= np.log2(X)
     
-    X= X[:, -nFFT//2:]
+    #X= X[:, -nFFT//2:]
     X= X.T
     
-    pl.imshow(X)
-    
+    pl.imshow(X, origin='lower', cmap='rainbow')
+    pl.colorbar()
+        
     return X
+ 
     
+def spec2dWav(x):
+    X= stRFFT(x)
 
+    X= np.log2(np.abs(X))
+    X= X.T
+
+    pl.imshow(X, origin='lower', cmap= 'rainbow')
+
+    pl.colorbar()
+    pl.xlabel('n')
+    pl.ylabel('k')
+    pl.title('X= log2(stRFFT(x))')
+
+
+from mpl_toolkits import mplot3d
+
+def spec3dWav(x):
+    
+    X= stRFFT(x)
+
+    X= np.log2(np.abs(X))
+    X= X.T
+    
+    im, jm= np.mgrid[0:X.shape[0]:4, 0:X.shape[1]:4]
+    ym, xm= im, jm
+
+    zm= X[im,jm]
+    ax= pl.axes(projection='3d', 
+                xlabel= 'n', 
+                ylabel= 'k', 
+                title= 'X= log2(stRFFT(x))')
+
+    
+    '''
+    ax.contour3D(xm,ym,zm, 
+                    cmap=     'rainbow',  
+                   )
+    '''
+    #ax.plot_surface
+    ax.plot_surface(xm,ym,zm, 
+                    rstride= 2, 
+                    cstride= 2,
+                    cmap=     'rainbow',  
+                    #edgecolor= 'gray'
+                   )
 
 def filterWav(x, 
               sr= 44100, 
@@ -349,12 +412,12 @@ def genCosSignal(T=1, f= 440, A=1, ϕ=0, sr= 44100):
     ys= A * np.cos(θ)
     return sr, ys
 
-def genSquareSignal(T=1, f= 440, A=1, ϕ=0, sr= 44100):
+def genSquareSignal00(T=1, f= 440, A=1, ϕ=0, sr= 44100):
     sr, ys= genSinSignal(T, f, A, ϕ, sr)
     ys= np.sign(ys)
     return sr, ys
 
-def genTriangleSignal(T=1, f= 440, A=1, ϕ=0, sr= 44100):
+def genTriangleSignal00(T=1, f= 440, A=1, ϕ=0, sr= 44100):
     ts= np.linspace(0, T, sr*T)
     θ= 2 *π  *f *ts + ϕ
     cycles= θ/(2 *π)
@@ -366,7 +429,7 @@ def genTriangleSignal(T=1, f= 440, A=1, ϕ=0, sr= 44100):
     
     return sr, ys
 
-def genSawtoothSignal(T=1, f= 440, A=1, ϕ=0, sr= 44100):
+def genSawtoothSignal00(T=1, f= 440, A=1, ϕ=0, sr= 44100):
     ts= np.linspace(0, T, sr*T)
     θ= 2 *π  *f *ts + ϕ
     cycles= θ/(2 *π)
@@ -376,6 +439,73 @@ def genSawtoothSignal(T=1, f= 440, A=1, ϕ=0, sr= 44100):
     
     #ys= A * np.sin(θ)
     
+    return sr, ys
+
+def genSawtoothSignal(T=1, f= 10, A=1, ϕ=0, sr= 44100):
+    
+    ts= np.linspace(0, T, sr*T)
+    cs= f *ts + ϕ/(2*π)
+    
+    fracPart, intPart= np.modf(cs)
+    ys= fracPart
+    ys= (ys - .5)*2
+    ys= ys*A
+       
+    return sr, ys
+
+def genTriangleSignal(T=1, f= 10, A=1, ϕ=0, sr= 44100):
+    
+    ts= np.linspace(0, T, sr*T)
+    cs= f *ts + ϕ/(2*π)
+    
+    fracPart, intPart= np.modf(cs)
+    
+    ys= fracPart
+    ys= ys - .5
+    ys= np.abs(ys)-.25
+    ys= ys*4
+    ys= ys*A
+       
+    return sr, ys
+
+def genSquareSignal(T=1, f= 10, A=1, ϕ=0, sr= 44100):
+    
+    ts= np.linspace(0, T, sr*T)
+    cs= f *ts + ϕ/(2*π)
+    
+    fracPart, intPart= np.modf(cs)
+    
+    ys= fracPart
+    ys= ys - .5
+    ys= np.sign(ys)
+    
+    ys= ys*A
+       
+    return sr, ys
+
+def genChirpSignal00(T=1, f= 440, A=1, ϕ=0, sr= 44100):
+    
+    ts= np.linspace(0, T, sr*T)
+    θ= 2*π*f *ts**2 + ϕ
+    ys= A * np.cos(θ)
+    return sr, ys
+
+def genChirpSignal(T=1, f0= 440, f1= 440*2, A=1, ϕ=0, sr= 44100):
+    
+    #ts= np.linspace(0, T, sr*T)
+    
+    fs= np.linspace(f0, f1, sr*T)
+    #fs= np.geomspace(f0, f1, sr*T)
+    #fs= np.logspace(np.log10(f0), np.log10(f1), num=sr*T, base=10)
+    
+    dt= 1/sr
+    dθ= 2*π *fs *dt
+    θ=  np.cumsum(dθ) + ϕ
+    
+    #θ= 2*π*f *ts**2 + ϕ
+    
+    ys= A * np.cos(θ)
+   
     return sr, ys
 
 
@@ -411,21 +541,21 @@ if __name__=='__main__':
     
     x= wav[sr*100:sr*120, :]
     plotWav(wav, sr*10//9)
-    playWav(wav, sr*10//9)
+    #playWav(wav, sr*10//9)
     
     #time.sleep(1)
     input('after playing, press any key to continue..')
     
     x= wav[sr*100:sr*120, 0]
     plotWav(wav, sr*9//10)
-    playWav(wav, sr*9//10)
+    #playWav(wav, sr*9//10)
     
     #time.sleep(1)
     input('after playing, press any key to continue..')
     
     x=  wav[sr*100:sr*120, 0]
     xx= filterWav(x, sr, cutoff_freq= 1000, lowpass=True)
-    playWav(xx,sr)
+    #playWav(xx,sr)
     plotWav(xx,sr)
     
     #time.sleep(1)
@@ -433,7 +563,7 @@ if __name__=='__main__':
 
     x=  wav[sr*100:sr*120, 0]
     xx= filterWav(x, sr, cutoff_freq= 1000, lowpass=False)
-    playWav(xx,sr)
+    #playWav(xx,sr)
     plotWav(xx,sr)
     
     #time.sleep(1)
