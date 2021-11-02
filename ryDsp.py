@@ -483,14 +483,14 @@ def genSquareSignal(T=1, f= 10, A=1, ϕ=0, sr= 44100):
        
     return sr, ys
 
-def genChirpSignal00(T=1, f= 440, A=1, ϕ=0, sr= 44100):
+def genChirpSignal_00(T=1, f= 440, A=1, ϕ=0, sr= 44100):
     
     ts= np.linspace(0, T, sr*T)
     θ= 2*π*f *ts**2 + ϕ
     ys= A * np.cos(θ)
     return sr, ys
 
-def genChirpSignal(T=1, f0= 440, f1= 440*2, A=1, ϕ=0, sr= 44100):
+def genChirpSignal_01(T=1, f0= 440, f1= 440*2, A=1, ϕ=0, sr= 44100):
     
     #ts= np.linspace(0, T, sr*T)
     
@@ -508,6 +508,82 @@ def genChirpSignal(T=1, f0= 440, f1= 440*2, A=1, ϕ=0, sr= 44100):
    
     return sr, ys
 
+def genChirpSignal(
+    T=  1,    # sec 
+    f0=  440,
+    f1=  880,
+    style= 'linear', # ['linear','exponential','sinusoidal','square']
+    A=  1,    # amplitude
+    sr= 44100 # Hz, sampling rate, samples/sec
+    ):
+    
+    # specify the time-series for the given duration
+    ts= np.linspace(0, T, sr*T)
+    
+    #
+    # specify the freq as fs= f(ts), 
+    #
+    # f() can be any function, 
+    # boundary conditions 
+    # f(t0)==f0
+    # f(t1)==f1
+    #
+    
+    def linear_style(ts):       
+        fs= f0 + (f1-f0)/T * ts  # linear
+        return fs
+    
+    def exponential_style(ts):       
+        fs= f0 * (f1/f0)**(ts/T)  # exponential
+        return fs
+    
+    def sinusoidal_style(ts):       
+        fs= (f1-f0)*(1 + np.sin(2 * π * ts/T*3)) # sinusoid for 3 periods
+        return fs
+    
+    def square_style(ts):       
+        fs= f0 + (f1-f0)/T**2 * ts**2  # square
+        return fs
+    
+    def sawtooth_style(ts):       
+        frac, _= np.modf(ts)
+        fs= frac*(f1-f0)+f0
+        return fs
+    
+    def unknown_style(ts, T0=1):       
+        fs= np.random.random(len(ts))*(f1-f0)+f0
+        return fs
+
+    
+    if style in ['linear', 'lin', 'l']:   
+        fs= linear_style(ts)
+    elif style in ['exponential', 'exp', 'e']:   
+        fs= exponential_style(ts)
+    elif style in ['sinusoidal', 'sin', 's']: 
+        fs= sinusoidal_style(ts)
+    elif style in ['square', 'squ', 'sq']:   
+        fs= square_style(ts)
+    elif style in ['sawtooth', 'saw', 'sa']:   
+        fs= sawtooth_style(ts)
+    else:
+        print('style unknown')
+        fs= unknown_style(ts)
+
+    # radian frequency
+    ws= 2*π*fs
+    
+    #
+    # θ = Integrate (w(t) dt)
+    #
+    dt=  T/len(ts)
+    θ=   np.cumsum(ws)*dt  # this is mimic the integration 
+    
+    #
+    # finally, generate the signal
+    #
+    ys= A * np.sin(θ)
+    
+    return sr, ys
 
 #%%
 #%%
