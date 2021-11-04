@@ -652,6 +652,61 @@ def makeSpectrogram(ys, seg_length=1024):
     
     return spectrogram
 
+
+# a better version of makeSpectrogram by using 
+# np.lib.stride_tricks.as_strided
+
+def ryFraming(x, 
+              stride_length= 100, 
+              stride_step= 10):
+    """
+    apply framing using the stride trick from numpy.
+
+    Args:
+     x (array) : signal array.
+     stride_length (int) : length of the stride.
+     stride_step (int) : stride step.
+
+    Returns:
+     2d blocked/framed array.
+    """
+    nrows= x.size // stride_step
+    if x.size%stride_length != 0:
+        nrows += 1
+        
+    # zero padding, how many zeros should I pad?
+    nZeros= stride_length
+    x=      np.append(x, np.zeros(nZeros)) 
+
+    n= x.strides[0]  
+    # this is an important number, 
+    # although it is 神秘 by the first glance
+    
+    y= np.lib.stride_tricks.as_strided(
+     x, 
+     shape=  (nrows, stride_length), 
+     strides=(stride_step*n, n))
+    
+    return y
+
+def rySpectrogram(x, frame_width= 1024, frame_shift= 512):
+          
+    x2d= ryFraming(
+            x, 
+            stride_length= frame_width, 
+            stride_step=   frame_shift)
+    
+    spectrogram= np.fft.rfft(x2d)   
+    spectrogram= np.abs(spectrogram)
+    
+    spec2d(spectrogram, log=True)
+    
+    return spectrogram
+
+
+
+
+
 #%%
 if __name__=='__main__':
     
