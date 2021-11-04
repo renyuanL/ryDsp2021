@@ -274,6 +274,7 @@ def shortTimeFFT(x, nFFT= 1024):
     
     x= zeroPaddingWav(x, nFFT)
     z= x.reshape(-1, nFFT)
+    
     Z=  numpy.fft.fft(z)
     
     return Z
@@ -607,6 +608,50 @@ def apodizeWav(wav, starting_ratio=1/2, ending_ratio=1/2):
 
 
 #%%
+
+#
+# makeSpectrogram
+#
+
+def spec2d(X, log=True):
+    
+    X= X.T  # we like time-axis be horizontal axis
+    
+    if log==True:
+        X= np.log(X)
+    
+    pl.imshow(X, origin='lower', cmap= 'rainbow')
+    
+    pl.colorbar()
+    pl.xlabel('n')
+    pl.ylabel('k')
+    pl.title('spec2d')
+    
+def makeSpectrogram(ys, seg_length=1024):
+    
+    i, j= 0, seg_length
+    step= seg_length // 2 # time-overlap
+    
+    spectrogram= [] 
+    
+    while j < len(ys):      
+        segment= ys[i:j] 
+        
+        #spec= np.fft.fft(segment) 
+        spec= np.fft.rfft(segment) 
+        
+        spectrogram += [spec]
+        
+        i += step
+        j += step
+        
+    spectrogram= np.vstack(spectrogram)    
+    spectrogram= np.abs(spectrogram)
+    
+    spec2d(spectrogram)
+    
+    return spectrogram
+
 #%%
 if __name__=='__main__':
     
