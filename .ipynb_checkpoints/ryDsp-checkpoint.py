@@ -247,6 +247,26 @@ def echoWav(x,
     return z
 
 #%%
+
+def apodizeWav(wav, starting_ratio=1/2, ending_ratio=1/2):
+    
+    assert starting_ratio <= 1/2
+    assert ending_ratio <= 1/2
+    
+    T0= wav.shape[0]
+    T1= int(T0 * starting_ratio)
+    T2= int(T0 * ending_ratio)
+    win0= np.linspace(0,1, T1)
+    win1= np.ones(T0-T1-T2)
+    win2= np.linspace(1,0, T2)
+    win=  np.concatenate((win0, win1, win2)) 
+    win=  win.reshape(-1,1)
+    q= wav*win
+    
+    return q
+#%%
+#%%
+
 def zeroPaddingWav(x, nFFT= 1024):
     '''
     在 x 後面
@@ -586,24 +606,6 @@ def genChirpSignal(
     
     return sr, ys
 
-#%%
-#%%
-def apodizeWav(wav, starting_ratio=1/2, ending_ratio=1/2):
-    
-    assert starting_ratio <= 1/2
-    assert ending_ratio <= 1/2
-    
-    T0= wav.shape[0]
-    T1= int(T0 * starting_ratio)
-    T2= int(T0 * ending_ratio)
-    win0= np.linspace(0,1, T1)
-    win1= np.ones(T0-T1-T2)
-    win2= np.linspace(1,0, T2)
-    win=  np.concatenate((win0, win1, win2)) 
-    win=  win.reshape(-1,1)
-    q= wav*win
-    
-    return q
 
 
 
@@ -704,8 +706,56 @@ def rySpectrogram(x, frame_width= 1024, frame_shift= 512):
     return spectrogram
 
 
+# Talking about Noise
+def genUncorrelatedUniformNoise(T=1, A=1, sr= 44100):
+    
+    ys= np.random.uniform(
+        low=  -A/2, 
+        high= +A/2,
+        size= T*sr)
+    
+    return sr, ys
+
+def genNoise(T=1, A=1, sr= 44100, type= 'uniform'):
+    
+    if type=='uniform':
+        ys= np.random.uniform(
+            low=  -A/2, 
+            high= +A/2,
+            size= T*sr)
+    elif type=='normal':
+        ys= np.random.normal(
+            loc=   0, 
+            scale= A,
+            size= T*sr)
+    else: # if none of the above, assume uniform
+        ys= np.random.uniform(
+            low=  -A/2, 
+            high= +A/2,
+            size= T*sr) 
+    
+    return sr, ys
 
 
+def makeIntegratedSpectrum(x, sr=44100):
+    
+    X= np.fft.rfft(x)
+    X= abs(X)
+    cX= X.cumsum() # IntegratedSpectrum
+    
+    # we need also determine the vertical axis unit (Hz)
+    # need some paper derive ....  
+    # widthOfFFT= x.size 
+    fs= np.linspace(0, sr//2, cX.size)
+    
+    pl.figure()
+    pl.subplot(2,1,1)
+    pl.plot(fs, X) # there maybe some bug
+    pl.subplot(2,1,2)
+    pl.plot(fs, cX)
+    pl.xlabel('f, (Hz)')
+    
+    return cX
 
 #%%
 if __name__=='__main__':

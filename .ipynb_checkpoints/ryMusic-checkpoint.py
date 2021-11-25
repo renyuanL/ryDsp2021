@@ -15,7 +15,7 @@ Created on Fri Nov  5 02:36:39 2021
 
 from ryDsp   import *
 from ryMusic_melody import *
-
+import time
 
 def musicNoteFreq(ts,  keyShift= 0, melodyId=0):       
     '''
@@ -106,7 +106,8 @@ def genMusicSignal(
     
     return sr, ys
 
-if __name__=='__main__':
+#if __name__=='__main__':
+def main():
     
     sr, x1= genMusicSignal(T= 20, keyShift=   0+5,  melodyId=1, sr= 8000)
     sr, x2= genMusicSignal(T= 20, keyShift=   0+5,  melodyId=2, sr= 8000)
@@ -117,26 +118,35 @@ if __name__=='__main__':
     x= np.stack([x2, x3, x4, x5], axis=1)
     
     
-    playWav(x1, sr, _tmp_wav= 'x1')
+    #playWav(x1, sr, _tmp_wav= 'x1')
     
     
-    #playWav(x2, sr)
-    #playWav(x3, sr)
-    #playWav(x4, sr)
-    #playWav(x5, sr)
-    playWav(x, sr, _tmp_wav= 'x')
-#%%    
-    pl.figure()    
-    rySpectrogram(x1)
+    playWav(x2, sr, _tmp_wav= 'x2')
+    time.sleep(21)
+    
+    playWav(x5, sr, _tmp_wav= 'x5')
+    time.sleep(21)
+    
+    playWav(x, sr,  _tmp_wav= 'x')
+    
+    #%%    
+    #pl.figure()    
+    #rySpectrogram(x1)
     
     pl.figure()
+    pl.subplot(2, 2,1)
     rySpectrogram(x2)
     
-    pl.figure()
+    pl.subplot(2, 2,2)
     rySpectrogram(x3)
     
-    pl.figure()
+    pl.subplot(2, 2,3)
     rySpectrogram(x4)
     
-    pl.figure()
-    rySpectrogram(x5)    
+    pl.subplot(2, 2,4)
+    rySpectrogram(x5)
+    
+    pl.show()
+    
+if __name__=='__main__':
+    main()

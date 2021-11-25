@@ -106,7 +106,8 @@ def genMusicSignal(
     
     return sr, ys
 
-if __name__=='__main__':
+#if __name__=='__main__':
+def main():
     
     sr, x1= genMusicSignal(T= 20, keyShift=   0+5,  melodyId=1, sr= 8000)
     sr, x2= genMusicSignal(T= 20, keyShift=   0+5,  melodyId=2, sr= 8000)
@@ -147,3 +148,5 @@ if __name__=='__main__':
     
     pl.show()
     
+if __name__=='__main__':
+    main()
